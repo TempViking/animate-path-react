@@ -1,4 +1,11 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Bezier Curve imitation
+
+To install:
+
+***
+git clone
+npm install
+***
 
 ## Available Scripts
 
