@@ -2,10 +2,10 @@
 
 To install:
 
-***
+```
 git clone
 npm install
-***
+```
 
 ## Available Scripts
 
