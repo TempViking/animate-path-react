@@ -1,27 +1,33 @@
 import React, {useEffect, useState} from 'react';
 import './App.css';
-import animatePath from './modules/animate-path';
+import animatePath from 'animate-path';
 
 function App() {
+    const [deg, setDeg] = useState<number | string>(0);
     const [left, setLeft] = useState(0);
     const [top, setTop] = useState(0);
-    const [duration, setDuration] = useState(400);
-    const [points, setPoints] = useState([{x: 0, y: 0}, {x: 5, y: 5}]);
+    const [duration, setDuration] = useState(1000);
+    const [points, setPoints] = useState([{x: 0, y: 0}, {x: 5, y: 5}, {x: 3, y: 0}]);
     let canvas = React.createRef<HTMLCanvasElement>();
+    let abs_pos = {x: 0, y: 0};
+
+    useEffect(() => {
+        setLeft(canvas.current!.getBoundingClientRect().left + 10);
+        setTop(canvas.current!.getBoundingClientRect().top + 10);
+    }, []);
 
     function animateProcess() {
+        abs_pos.x = canvas.current!.getBoundingClientRect().left + 10;
+        abs_pos.y = canvas.current!.getBoundingClientRect().top + 10;
         const ctx = canvas.current!.getContext('2d');
         ctx!.clearRect(0, 0, 500, 500);
         animatePath({
             duration: duration,
             points: points,
-        }, ({x, y, tg}) => {
-            // ctx!.fillRect(x * 10, y * 10, 1, 1);
-            ctx!.beginPath();
-            ctx!.moveTo(x * 100, y * 100);
-            ctx!.lineTo(x * 100 + tg.x * 10, y * 100 + tg.y * 10);
-            ctx!.closePath();
-            ctx!.stroke();
+        }, ({x, y, deg}) => {
+            setDeg(deg);
+            setLeft(x * 100 + abs_pos.x);
+            setTop(y * 100 + abs_pos.y);
         }).then(() => {
             // alert('It`s finalized!');
         });
@@ -45,6 +51,9 @@ function App() {
 
     return (
         <div className="App">
+            <svg width={30} height={30} viewBox={'0 0 500 500'} style={{transform: `rotate(${deg}deg)`, position: 'absolute', top: top + 'px', left: left + 'px'}}>
+                <path d={'M.5,249.5l213-87.5,213-87.5L338.5,287l-88,212.5c0-30-35.4-117.4-88-170C110.92,277.92,30.5,250.5.5,249.5Z'} />
+            </svg>
             <div className={'field'}>
                 <span className={'field__desc'}>Points:</span>
                 <br />
@@ -63,10 +72,7 @@ function App() {
                 <span className={'field__desc'}>Duration:</span>
                 <input className={'field__input'} onChange={e => { setDuration(parseInt(e.target.value)); }} value={duration} />
             </div>
-            <div style={{
-                left: left + 'px',
-                top: top + 'px',
-            }}>
+            <div>
                 <canvas className={'canvas'} width={500} height={500} ref={canvas}></canvas>
             </div>
             <button className={'button'} onClick={animateProcess}>Restart</button>

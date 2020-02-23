@@ -17,24 +17,19 @@ interface IPoint {
 }
 
 interface IAlignedPoint extends IPoint {
-    tg: IPoint,
+    deg: number,
 }
 
 function derive(points: IPoint[]) {
-    let dpoints = [];
-    for (let p = points, d = p.length, c = d - 1; d > 1; d--, c--) {
-        let list = [];
-        for (let j = 0, dpt; j < c; j++) {
-            dpt = {
-                x: c * (p[j + 1].x - p[j].x),
-                y: c * (p[j + 1].y - p[j].y)
-            };
-            list.push(dpt);
-        }
-        dpoints.push(list);
-        p = list;
+    let c = points.length - 1,
+        list = [];
+    for (let j = 0; j < c; j++) {
+        list.push({
+            x: c * (points[j + 1].x - points[j].x),
+            y: c * (points[j + 1].y - points[j].y),
+        });
     }
-    return dpoints;
+    return list;
 }
 
 function getTGForTwo(points: IPoint[], t: number) {
@@ -116,13 +111,13 @@ export default async function ({duration, points}: IAnimatePath, func: (p: IAlig
                 let point = calculate(timeFraction, points);
                 let tg = {x: 0, y: 0};
                 if (points.length > 3) {
-                    tg = getTGForThree(derive(points)[0], timeFraction);
-                } else if(points.length > 2) {
-                    tg = getTGForTwo(derive(points)[0], timeFraction);
+                    tg = getTGForThree(derive(points), timeFraction);
+                } else if (points.length > 2) {
+                    tg = getTGForTwo(derive(points), timeFraction);
                 }
-                let m = Math.sqrt(tg.x*tg.x + tg.y*tg.y);
-                tg = {x:tg.x/m, y:tg.y/m};
-                func({...point, tg: tg});
+                let m = Math.sqrt(tg.x * tg.x + tg.y * tg.y);
+                tg = {x: tg.x / m, y: tg.y / m};
+                func({...point, deg: Math.atan2(tg.y, tg.x) * 180 / Math.PI + 45});
                 requestAnimationFrame(animate);
             } else {
                 resolve();
