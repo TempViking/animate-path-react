@@ -3,7 +3,8 @@
 To install:
 
 ```
-git clone
+git clone https://github.com/TempViking/animate-path-react.git
+cd animate-path-react
 npm install
 ```
 
