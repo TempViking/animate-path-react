@@ -6,17 +6,22 @@ function App() {
     const [left, setLeft] = useState(0);
     const [top, setTop] = useState(0);
     const [duration, setDuration] = useState(400);
-    const [points, setPoints] = useState([{x: 0, y: 0}, {x: 6, y: 6}]);
+    const [points, setPoints] = useState([{x: 0, y: 0}, {x: 5, y: 5}]);
     let canvas = React.createRef<HTMLCanvasElement>();
 
     function animateProcess() {
         const ctx = canvas.current!.getContext('2d');
-        ctx!.clearRect(0, 0, 60, 60);
+        ctx!.clearRect(0, 0, 500, 500);
         animatePath({
             duration: duration,
             points: points,
-        }, ({x, y}) => {
-            ctx!.fillRect(x * 10, y * 10, 1, 1);
+        }, ({x, y, tg}) => {
+            // ctx!.fillRect(x * 10, y * 10, 1, 1);
+            ctx!.beginPath();
+            ctx!.moveTo(x * 100, y * 100);
+            ctx!.lineTo(x * 100 + tg.x * 10, y * 100 + tg.y * 10);
+            ctx!.closePath();
+            ctx!.stroke();
         }).then(() => {
             // alert('It`s finalized!');
         });
@@ -62,7 +67,7 @@ function App() {
                 left: left + 'px',
                 top: top + 'px',
             }}>
-                <canvas className={'canvas'} width={60} height={60} ref={canvas}></canvas>
+                <canvas className={'canvas'} width={500} height={500} ref={canvas}></canvas>
             </div>
             <button className={'button'} onClick={animateProcess}>Restart</button>
         </div>

@@ -8,12 +8,54 @@ const requestAnimationFrame = window.requestAnimationFrame ||
     };
 
 interface ICalculate {
-    (t: number, points: IPoint[]): IPoint
+    (t: number, points: IPoint[]): IPoint,
 }
 
 interface IPoint {
     x: number,
     y: number,
+}
+
+interface IAlignedPoint extends IPoint {
+    tg: IPoint,
+}
+
+function derive(points: IPoint[]) {
+    let dpoints = [];
+    for (let p = points, d = p.length, c = d - 1; d > 1; d--, c--) {
+        let list = [];
+        for (let j = 0, dpt; j < c; j++) {
+            dpt = {
+                x: c * (p[j + 1].x - p[j].x),
+                y: c * (p[j + 1].y - p[j].y)
+            };
+            list.push(dpt);
+        }
+        dpoints.push(list);
+        p = list;
+    }
+    return dpoints;
+}
+
+function getTGForTwo(points: IPoint[], t: number) {
+    let mt = 1 - t,
+        a = mt * mt,
+        b = mt * t * 2;
+    return {
+        x: a * points[0].x + b * points[1].x,
+        y: a * points[0].y + b * points[1].y,
+    };
+}
+
+function getTGForThree(points: IPoint[], t: number) {
+    let mt = 1 - t,
+        a = mt * mt,
+        b = mt * t * 2,
+        c = t * t;
+    return {
+        x: a * points[0].x + b * points[1].x + c * points[2].x,
+        y: a * points[0].y + b * points[1].y + c * points[2].y,
+    };
 }
 
 function calculateTwoPoints(t: number, [p1, p2]: IPoint[]) {
@@ -49,7 +91,7 @@ interface IAnimatePath {
     points: IPoint[],
 }
 
-export default async function({duration, points}: IAnimatePath, func: (p: IPoint) => void) {
+export default async function ({duration, points}: IAnimatePath, func: (p: IAlignedPoint) => void) {
     let time_start = performance.now();
 
     let calculate: ICalculate;
@@ -71,7 +113,16 @@ export default async function({duration, points}: IAnimatePath, func: (p: IPoint
             if (timeFraction > 1) timeFraction = 1;
 
             if (timeFraction < 1) {
-                func(calculate(timeFraction, points));
+                let point = calculate(timeFraction, points);
+                let tg = {x: 0, y: 0};
+                if (points.length > 3) {
+                    tg = getTGForThree(derive(points)[0], timeFraction);
+                } else if(points.length > 2) {
+                    tg = getTGForTwo(derive(points)[0], timeFraction);
+                }
+                let m = Math.sqrt(tg.x*tg.x + tg.y*tg.y);
+                tg = {x:tg.x/m, y:tg.y/m};
+                func({...point, tg: tg});
                 requestAnimationFrame(animate);
             } else {
                 resolve();
